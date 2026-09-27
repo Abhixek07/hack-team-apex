@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Community & Contact — Nexora</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment-with-locales.js"></script>
+  <script src="js/jquery.min.js"></script>
+  <script src="js/globals.js"></script>
+  <script src="js/main.js"></script>
+  <style>
+    body {
+      background: var(--bg, #0b0d12);
+      color: var(--text, #e6e8ee);
+    }
+
+    .hero {
+      text-align: center;
+      padding: 40px 0 60px;
+    }
+
+    .hero h1 {
+      font-size: clamp(36px, 6vw, 64px);
+      line-height: 1.15;
+    }
+
+    .hero p {
+      text-align: center;
+      color: var(--text-muted, #a3a9b7);
+      max-width: 600px;
+      margin: 18px auto 0;
+      font-size: 15px;
+    }
+
+    .two {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 28px;
+      align-items: start;
+    }
+
+    .thread {
+      margin-bottom: 14px;
+      padding: 20px;
+    }
+
+    .thread .who {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: var(--brand, #3b82f6);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .thread b {
+      color: var(--text, #e6e8ee);
+      font-size: 13px;
+    }
+
+    .thread .t {
+      font-size: 11px;
+      color: var(--text-muted, #a3a9b7);
+    }
+
+    .thread p {
+      color: var(--text, #e6e8ee);
+      margin-top: 10px;
+      word-break: break-word;
+    }
+
+    .composer textarea,
+    .composer input {
+      width: 100%;
+      background: var(--surface, #141821);
+      border: 1px solid var(--surface-border, rgba(255, 255, 255, .1));
+      border-radius: 12px;
+      padding: 10px 14px;
+      color: var(--text, #e6e8ee);
+      font-size: 13px;
+      margin-bottom: 8px;
+      box-sizing: border-box;
+    }
+
+    .info .row-i {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--surface-border, rgba(255, 255, 255, .05));
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .info .row-i .icon-tile {
+      width: 54px;
+      height: 54px;
+      font-size: 26px;
+      margin: 0;
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(59, 130, 246, .1);
+    }
+
+    .info h4 {
+      font-size: 14px;
+      color: var(--text, #e6e8ee);
+      margin: 0 0 2px;
+    }
+
+    .info span {
+      font-size: 12px;
+      color: var(--text-muted, #a3a9b7);
+    }
+
+    /* 📬 contact modal */
+    .cmodal {
+      max-width: 900px;
+      width: 90%;
+      max-height: 85vh;
+      overflow-y: auto;
+      text-align: left;
+      padding: 30px;
+      background: var(--surface, #141821);
+      border: 1px solid var(--surface-border, rgba(255, 255, 255, .1));
+      border-radius: 16px;
+    }
+
+    .cmodal .cols {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .field {
+      margin-bottom: 14px;
+    }
+
+    .field label {
+      font-size: 12px;
+      color: var(--text, #e6e8ee);
+      display: block;
+      margin-bottom: 4px;
+      font-weight: 500;
+    }
+
+    .field .help {
+      font-size: 11px;
+      color: var(--text-muted, #a3a9b7);
+      margin-top: 3px;
+    }
+
+    .field .tip {
+      font-size: 11px;
+      color: var(--brand, #3b82f6);
+      margin-left: 4px;
+      cursor: help;
+    }
+
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      background: var(--surface, rgba(255, 255, 255, .04));
+      border: 1px solid var(--surface-border, rgba(255, 255, 255, .15));
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 13px;
+      color: var(--text, #e6e8ee);
+      margin-top: 4px;
+      box-sizing: border-box;
+    }
+
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      border-color: var(--brand, #3b82f6);
+      outline: none;
+    }
+
+    #msg {
+      height: 70px;
+      resize: vertical;
+    }
+
+    .err {
+      font-size: 12px;
+      color: var(--danger, #dc2626);
+      margin-top: 10px;
+      font-weight: 500;
+      min-height: 18px;
+    }
+
+    .x {
+      cursor: pointer;
+      user-select: none;
+    }
+
+    @media (max-width: 768px) {
+      .two {
+        grid-template-columns: 1fr;
+      }
+
+      .cmodal .cols {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+
+      .hero {
+        padding: 24px 0 40px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <script>showPreloader(); writeNav();</script>
+
+  <div class="container">
+    <div class="hero">
+      <span class="badge"><span class="pulse-dot"></span> 💬 Community — 12,000+ members online</span>
+      <h1 style="margin-top:22px">Let's build the <span class="gradient-text">future</span> together</h1>
+      <p>Have a question? An idea? Feedback? We'd love to hear from you — our team typically responds within minutes —
+        sometimes seconds.</p>
+      <div style="display:flex;gap:12px;justify-content:center;margin-top:28px">
+        <span class="btn-glow" onclick="openContact()">Contact us ✨</span>
+        <a href="https://discord.com" target="_blank" rel="noopener noreferrer" class="btn-ghost"
+          style="text-decoration:none">Join Discord →</a>
+      </div>
+    </div>
+
+    <div class="two">
+      <!-- ======== FORUM ======== -->
+      <div class="card">
+        <div class="card">
+          <span class="eyebrow">Community</span>
+          <h2 style="font-size:32px;margin-bottom:20px">Latest <span class="gradient-text">discussions</span></h2>
+          <div id="threads"></div>
+          <div class="card composer" style="margin-top:14px">
+            <input id="fname" placeholder="Your name" aria-label="Your name">
+            <textarea id="fpost" placeholder="Share your thoughts with the community…"
+              aria-label="Share your thoughts"></textarea>
+            <span class="btn-glow" onclick="post()" style="cursor:pointer">Post ✨</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ======== INFO ======== -->
+      <div class="card info">
+        <div class="card">
+          <span class="eyebrow">Reach out</span>
+          <h3 style="font-size:22px;margin-bottom:10px">Other ways to connect</h3>
+          <a href="mailto:hello@nexora.ai" class="row-i">
+            <div class="icon-tile">📧</div>
+            <div>
+              <h4>Email</h4><span>hello@nexora.ai</span>
+            </div>
+          </a>
+          <div class="row-i" onclick="openContact()" style="cursor:pointer">
+            <div class="icon-tile">💬</div>
+            <div>
+              <h4>Live chat</h4><span>Available 24/7 — always</span>
+            </div>
+          </div>
+          <div class="row-i">
+            <div class="icon-tile">📍</div>
+            <div>
+              <h4>Office</h4><span>San Francisco — Remote — Everywhere</span>
+            </div>
+          </div>
+          <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" class="row-i">
+            <div class="icon-tile">🐦</div>
+            <div>
+              <h4>Social</h4><span>@nexora</span>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== CONTACT MODAL ======== -->
+  <div class="overlay-backdrop" id="cm" style="display:none" role="dialog" aria-modal="true"
+    aria-labelledby="modal-title">
+    <div class="dialog cmodal" style="position:relative">
+      <span class="x" onclick="closeContact()" aria-label="Close modal">✕</span>
+      <span class="eyebrow">Contact</span>
+      <h2 id="modal-title" style="font-size:32px">Get in <span class="gradient-text">touch</span> 👋</h2>
+      <p style="margin:6px 0 20px;color:var(--text-muted,#a3a9b7)">Fill out the form below to get in touch with us.
+        Please complete all fields in this contact form.</p>
+      <form id="cform" onsubmit="event.preventDefault(); sendForm();">
+        <div class="cols">
+          <div>
+            <div class="field"><label for="n">Name <span class="tip" title="Enter your name">ⓘ</span></label><input
+                id="n" placeholder="Enter your name">
+              <div class="help">Please enter your name.</div>
+            </div>
+            <div class="field"><label for="e">Email <span class="tip" title="Enter your email">ⓘ</span></label><input
+                id="e" type="email" placeholder="Enter your email">
+              <div class="help">Your email address goes here.</div>
+            </div>
+            <div class="field"><label for="ph">Phone <span class="tip" title="Enter your phone">ⓘ</span></label><input
+                id="ph" type="tel" placeholder="Enter your phone number">
+              <div class="help">Type your phone number here.</div>
+            </div>
+          </div>
+          <div>
+            <div class="field"><label for="comp">Company</label><input id="comp" placeholder="Enter your company">
+              <div class="help">The company you work for.</div>
+            </div>
+            <div class="field"><label for="team">Team size</label><select id="team">
+                <option>1–10</option>
+                <option>10–50</option>
+                <option>50–100</option>
+                <option>Enterprise</option>
+              </select>
+              <div class="help">Select your team size.</div>
+            </div>
+            <div class="field"><label for="topic">Topic <span class="tip" title="Choose a topic">ⓘ</span></label><select
+                id="topic">
+                <option value="">Choose a topic</option>
+                <option>Sales</option>
+                <option>Support</option>
+                <option>Partnerships</option>
+              </select>
+              <div class="help">Pick the topic of your message.</div>
+            </div>
+          </div>
+          <div>
+            <div class="field"><label for="msg">Message <span class="tip"
+                  title="Write your message">ⓘ</span></label><textarea id="msg"
+                placeholder="Write your message…"></textarea>
+              <div class="help">Write your message in the message box.</div>
+            </div>
+            <div class="field"><label for="cap">Verification</label><input id="cap" placeholder="What is 2 + 2?">
+              <div class="help">Answer the question to verify.</div>
+            </div>
+            <div class="field" style="font-size:11px;color:var(--text-muted,#a3a9b7)"><label
+                style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" id="agree"
+                  style="width:auto"> I agree to receive marketing emails and updates.</label></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:10px">
+          <span class="btn-ghost" style="cursor:pointer" onclick="closeContact()">Cancel</span>
+          <span class="btn-glow" style="cursor:pointer" onclick="sendForm()">Send message 🚀</span>
+        </div>
+        <div id="err" class="err"></div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    /* ------------ 💬 FORUM ------------ */
+    var threads = JSON.parse(localStorage.getItem("threads")) || [
+      { name: "Rahul", text: "Just discovered Nexora — absolute game-changer 🚀", t: 1704067200000 },
+      { name: "Priya", text: "Loving the new updates and platform speed!", t: 1704167200000 },
+      { name: "Nexora Team", text: "Community guidelines: be kind, be curious, no HTML allowed.", t: 1704267200000 }
+    ];
+
+    function renderThreads() {
+      var h = "";
+      // loop down to index 0 so the first post is also displayed
+      for (var ix = threads.length - 1; ix >= 0; ix--) {
+        var initial = threads[ix].name ? escapeHtml(threads[ix].name.charAt(0).toUpperCase()) : "U";
+        h += '<div class="card thread"><div class="who"><div class="avatar">' + initial + '</div><div><b>' + escapeHtml(threads[ix].name) + '</b><div class="t">' + formatDate(threads[ix].t) + '</div></div></div><p>' + escapeHtml(threads[ix].text) + '</p></div>';
+      }
+      $id("threads").innerHTML = h;
+    }
+
+    function post() {
+      var name = ($id("fname").value || "").trim();
+      var text = ($id("fpost").value || "").trim();
+      if (!name || !text) {
+        toast("⚠️ Please enter both your name and a message.");
+        return;
+      }
+      threads.push({ name: name, text: text, t: Date.now() });
+      // use consistent key "threads" so posts persist across reloads
+      localStorage.setItem("threads", JSON.stringify(threads));
+      $id("fpost").value = "";
+      renderThreads();
+      toast("🎉 Posted to the community!");
+    }
+    renderThreads();
+
+    /* ------------ 📬 CONTACT ------------ */
+    function openContact() {
+      $id("cm").style.display = "flex";
+      $id("cm").style.alignItems = "center";
+      $id("cm").style.justifyContent = "center";
+    }
+
+    function closeContact() {
+      $id("cm").style.display = "none";
+      $id("err").innerHTML = "";
+    }
+
+    // Close modal on Escape key or backdrop click
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeContact(); });
+    $id("cm").addEventListener("click", function (e) { if (e.target === this) closeContact(); });
+
+    function sendForm() {
+      var err = "";
+      var name = ($id("n").value || "").trim();
+      var email = ($id("e").value || "").trim();
+      var phone = ($id("ph").value || "").trim();
+      var msg = ($id("msg").value || "").trim();
+      var cap = ($id("cap").value || "").trim().toLowerCase();
+
+      if (name.length < 2) err = "Please enter your name.";
+      else if (!validateEmail(email)) err = "Please enter a valid email address.";
+      else if (phone && isNaN(phone.replace(/[\s+\-()]/g, ""))) err = "Invalid phone number.";
+      else if (msg.length < 5) err = "Please enter a message (at least 5 characters).";
+      else if (cap !== "4" && cap !== "four") err = "Verification failed: What is 2 + 2? Please enter 4.";
+
+      if (err) {
+        // Show error without resetting user input
+        $id("err").style.color = "var(--danger, #dc2626)";
+        $id("err").innerHTML = err;
+        return;
+      }
+
+      $id("err").style.color = "var(--success, #16a34a)";
+      $id("err").innerHTML = "✅ Sending message…";
+
+      setTimeout(function () {
+        $id("cform").reset();
+        closeContact();
+        toast("✅ Message sent successfully!");
+      }, 800);
+    }
+
+    newsletterPopup();
+    cookieBanner();
+    cursorGlow();
+  </script>
+  <script>writeFooter();</script>
+</body>
+
+</html>

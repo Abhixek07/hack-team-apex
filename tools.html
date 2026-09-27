@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tools — Nexora Toolkit</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+<script src="js/jquery.min.js"></script>
+<script src="js/globals.js"></script>
+<script src="js/main.js"></script>
+<style>
+  body { background: var(--bg, #0b0d12); color: var(--text, #e6e8ee); font-family: 'Geist', sans-serif; }
+  .head { text-align: center; padding: 30px 0 48px; }
+  .head h1 { font-size: clamp(36px, 6vw, 64px); color: var(--text, #e6e8ee); letter-spacing: -0.02em; line-height: 1.1; }
+  .head h1 mark { background: var(--brand, #3b82f6); color: #fff; padding: 0 12px; border-radius: 8px; display: inline-block; }
+  .sticker { display: inline-block; background: rgba(59, 130, 246, 0.15); color: var(--brand, #3b82f6); border: 1px solid rgba(59, 130, 246, 0.3); padding: 4px 14px; font-weight: 600; font-size: 12px; border-radius: 999px; margin-bottom: 12px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
+  .tool { background: var(--surface, #141821); border: 1px solid var(--surface-border, rgba(255, 255, 255, 0.08)); border-radius: 16px; padding: 22px; transition: border-color .2s ease, box-shadow .2s ease; }
+  .tool:hover { border-color: rgba(59, 130, 246, 0.4); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3); }
+  .tool .icon-tile { background: rgba(59, 130, 246, 0.12); border-radius: 12px; width: 54px; height: 54px; font-size: 26px; display: flex; align-items: center; justify-content: center; margin-bottom: 14px; }
+  .tool h4 { color: var(--text, #e6e8ee); font-size: 18px; font-weight: 600; margin: 0 0 4px; letter-spacing: -0.01em; }
+  .tool .hint { font-size: 12px; color: var(--text-muted, #a3a9b7); margin-bottom: 14px; line-height: 1.4; }
+  .tool input, .tool select { width: 100%; border: 1px solid var(--surface-border, rgba(255, 255, 255, 0.15)); border-radius: 8px; padding: 8px 12px; font-size: 13px; background: var(--surface, rgba(255, 255, 255, 0.04)); color: var(--text, #e6e8ee); margin-bottom: 10px; box-sizing: border-box; }
+  .tool input:focus, .tool select:focus { border-color: var(--brand, #3b82f6); outline: none; }
+  .tool .go { display: inline-block; background: var(--brand, #3b82f6); color: #fff; font-weight: 600; font-size: 13px; padding: 6px 18px; border-radius: 999px; cursor: pointer; transition: background .15s ease; user-select: none; }
+  .tool .go:hover { background: var(--brand-hover, #2563eb); }
+  .tool .out { margin-top: 14px; font-size: 18px; font-weight: 600; color: var(--text, #e6e8ee); word-break: break-all; min-height: 32px; display: flex; align-items: center; }
+
+  @media (max-width: 640px) {
+    .grid { grid-template-columns: 1fr; }
+    .head { padding: 20px 0 32px; }
+  }
+</style>
+</head>
+<body>
+<script>showPreloader(); writeNav();</script>
+<div class="container" style="max-width:1200px;margin:0 auto;padding:0 20px 60px">
+  <div class="head">
+    <span class="sticker">⚡ 100% FREE — NO SIGNUP</span>
+    <h1 style="margin-top:16px">The <mark>toolkit</mark><br>you didn't know you needed.</h1>
+    <p style="text-align:center;color:var(--text-muted,#a3a9b7);margin-top:16px;font-size:15px">Seven tools. Zero fluff. Accurate and responsive.</p>
+  </div>
+  <div id="root"></div>
+</div>
+
+<script type="text/babel">
+const { useState } = React;
+
+// 🧰 Reusable tool card component
+function Tool({ icon, title, hint, children }) {
+  return (
+    <div className="tool">
+      <div className="icon-tile" aria-hidden="true">{icon}</div>
+      <h4>{title}</h4>
+      <div className="hint">{hint}</div>
+      {children}
+    </div>
+  );
+}
+
+function App() {
+  const [km, setKm] = useState("");
+  const [wt, setWt] = useState(""); const [ht, setHt] = useState(""); const [bmiOut, setBmiOut] = useState("");
+  const [bill, setBill] = useState(""); const [tip, setTip] = useState("15"); const [ppl, setPpl] = useState("2"); const [tipOut, setTipOut] = useState("");
+  const [amt, setAmt] = useState("100"); const [rate, setRate] = useState("0.92"); const [curOut, setCurOut] = useState("");
+  const [plen, setPlen] = useState(16); const [pw, setPw] = useState("");
+  const [dob, setDob] = useState(""); const [ageOut, setAgeOut] = useState("");
+  const [fg, setFg] = useState("#e6e8ee"); const [bg, setBg] = useState("#141821"); const [conOut, setConOut] = useState("");
+
+  // 🧮 BMI: convert height cm to meters, calculate wt / (h*h), and use standard WHO categories
+  const bmi = () => {
+    const w = parseFloat(wt), h = parseFloat(ht) / 100;
+    if (!w || !h || w <= 0 || h <= 0) { setBmiOut("Please enter weight & height"); return; }
+    const b = w / (h * h);
+    const cat = b < 18.5 ? "underweight" : b < 25 ? "healthy" : b < 30 ? "overweight" : "obese";
+    setBmiOut(b.toFixed(1) + " (" + cat + ")");
+  };
+
+  // 💸 Tip: parse bill as number to prevent string concatenation
+  const tipcalc = () => {
+    const b = parseFloat(bill), t = parseFloat(tip) || 0, p = parseInt(ppl, 10) || 1;
+    if (isNaN(b) || b <= 0) { setTipOut("Enter valid bill amount"); return; }
+    const totalBill = b + (b * t / 100);
+    setTipOut("each: $" + (totalBill / p).toFixed(2));
+  };
+
+  // 💱 Currency: calculate amount * selected exchange rate
+  const conv = () => {
+    const a = parseFloat(amt);
+    if (isNaN(a) || a < 0) { setCurOut("Enter valid amount"); return; }
+    const r = parseFloat(rate) || 1;
+    setCurOut((a * r).toFixed(2));
+  };
+
+  // 🔐 Password: cryptographically secure random password generator matching plen
+  const pwgen = () => {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+";
+    const len = Math.max(8, Math.min(64, parseInt(plen, 10) || 16));
+    const buf = new Uint32Array(len);
+    window.crypto.getRandomValues(buf);
+    let s = "";
+    for (let n = 0; n < len; n++) s += chars[buf[n] % chars.length];
+    setPw(s);
+  };
+
+  // 🎂 Age: calculate exact age accounting for month and day of birth
+  const age = () => {
+    if (!dob) { setAgeOut("Enter birth date"); return; }
+    const d = new Date(dob), now = new Date();
+    if (isNaN(d.getTime()) || d > now) { setAgeOut("Invalid birth date"); return; }
+    let years = now.getFullYear() - d.getFullYear();
+    const m = now.getMonth() - d.getMonth();
+    if (m < 0 || (m === 0 && now.getDate() < d.getDate())) years--;
+    setAgeOut(years + " years");
+  };
+
+  // ♿ WCAG contrast: calculate relative luminance and contrast ratio (>= 4.5:1 passes AA)
+  const contrast = () => {
+    const lum = (hex) => {
+      let h = hex.replace("#", "");
+      if (h.length === 3) h = h.split("").map(c => c + c).join("");
+      const rgb = [parseInt(h.slice(0, 2), 16) / 255, parseInt(h.slice(2, 4), 16) / 255, parseInt(h.slice(4, 6), 16) / 255];
+      const a = rgb.map(v => v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
+      return 0.2126 * a[0] + 0.7152 * a[1] + 0.0722 * a[2];
+    };
+    try {
+      const l1 = lum(fg), l2 = lum(bg);
+      const ratio = (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+      setConOut(ratio.toFixed(2) + ":1 " + (ratio >= 4.5 ? "✅ PASS" : "❌ FAIL"));
+    } catch (e) {
+      setConOut("Invalid hex color");
+    }
+  };
+
+  return (
+    <div className="grid">
+      <Tool icon="📏" title="KM → Miles" hint="Convert kilometres to miles instantly">
+        <input placeholder="km" value={km} onChange={e => setKm(e.target.value)} aria-label="Kilometres" />
+        <div className="out">{toMiles(km)}</div>
+      </Tool>
+      <Tool icon="⚖️" title="BMI Calc" hint="Know your body — know yourself">
+        <input placeholder="weight (kg)" value={wt} onChange={e => setWt(e.target.value)} aria-label="Weight in kg" />
+        <input placeholder="height (cm)" value={ht} onChange={e => setHt(e.target.value)} aria-label="Height in cm" />
+        <span className="go" onClick={bmi} role="button" tabIndex="0" onKeyDown={e => e.key === 'Enter' && bmi()}>Calculate →</span>
+        <div className="out">{bmiOut}</div>
+      </Tool>
+      <Tool icon="🍕" title="Tip Split" hint="Split the bill — keep the friends">
+        <input placeholder="bill" value={bill} onChange={e => setBill(e.target.value)} aria-label="Bill amount" />
+        <input placeholder="tip %" value={tip} onChange={e => setTip(e.target.value)} aria-label="Tip percentage" />
+        <input placeholder="people" value={ppl} onChange={e => setPpl(e.target.value)} aria-label="Number of people" />
+        <span className="go" onClick={tipcalc} role="button" tabIndex="0" onKeyDown={e => e.key === 'Enter' && tipcalc()}>Split →</span>
+        <div className="out">{tipOut}</div>
+      </Tool>
+      <Tool icon="💱" title="Currency" hint="Convert USD to target currency">
+        <input placeholder="amount (USD)" value={amt} onChange={e => setAmt(e.target.value)} aria-label="Amount in USD" />
+        <select value={rate} onChange={e => setRate(e.target.value)} aria-label="Target currency">
+          <option value="0.92">USD → EUR (€)</option>
+          <option value="0.79">USD → GBP (£)</option>
+          <option value="83.5">USD → INR (₹)</option>
+          <option value="155">USD → JPY (¥)</option>
+          <option value="0.000015">USD → BTC (₿)</option>
+        </select>
+        <span className="go" onClick={conv} role="button" tabIndex="0" onKeyDown={e => e.key === 'Enter' && conv()}>Convert →</span>
+        <div className="out">{curOut}</div>
+      </Tool>
+      <Tool icon="🔐" title="Password Gen" hint="Cryptographically secure generator">
+        <input type="number" min="8" max="64" value={plen} onChange={e => setPlen(e.target.value)} aria-label="Password length" />
+        <span className="go" onClick={pwgen} role="button" tabIndex="0" onKeyDown={e => e.key === 'Enter' && pwgen()}>Generate →</span>
+        <div className="out" style={{ fontSize: "14px", wordBreak: "break-all" }}>{pw}</div>
+      </Tool>
+      <Tool icon="🎂" title="Age Calc" hint="Enter your date of birth">
+        <input type="date" value={dob} onChange={e => setDob(e.target.value)} aria-label="Date of birth" />
+        <span className="go" onClick={age} role="button" tabIndex="0" onKeyDown={e => e.key === 'Enter' && age()}>How old am I →</span>
+        <div className="out">{ageOut}</div>
+      </Tool>
+      <Tool icon="♿" title="WCAG Checker" hint="Relative luminance ratio checker">
+        <input value={fg} onChange={e => setFg(e.target.value)} aria-label="Foreground hex" />
+        <input value={bg} onChange={e => setBg(e.target.value)} aria-label="Background hex" />
+        <span className="go" onClick={contrast} role="button" tabIndex="0" onKeyDown={e => e.key === 'Enter' && contrast()}>Check →</span>
+        <div className="out">{conOut}</div>
+      </Tool>
+    </div>
+  );
+}
+
+// React 18 createRoot mounting
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+
+<script>
+newsletterPopup();
+cookieBanner();
+</script>
+<script>writeFooter();</script>
+</body>
+</html>
