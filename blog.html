@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Journal — Nexora</title>
+  <meta name="description"
+    content="Essays, ideas, and quiet reflections on design, artificial intelligence, and building products.">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="css/style.css">
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment-with-locales.min.js"></script>
+  <script src="js/jquery.min.js"></script>
+  <script src="js/globals.js"></script>
+  <script src="js/main.js"></script>
+
+  <style>
+    /* Design System Tokens aligned with DESIGN.md */
+    :root {
+      --bg-color: #0b0d12;
+      --surface-color: #141821;
+      --border-color: rgba(255, 255, 255, 0.08);
+      --text-main: #e6e8ee;
+      --text-muted: #a3a9b7;
+      --brand-accent: #3b82f6;
+      --brand-glow: rgba(59, 130, 246, 0.35);
+    }
+
+    /* Light Theme Support per DESIGN.md & toggleTheme() */
+    html.light body,
+    body.light {
+      --bg-color: #f8fafc;
+      --surface-color: #ffffff;
+      --border-color: #e2e8f0;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --brand-accent: #2563eb;
+      --brand-glow: rgba(37, 99, 235, 0.2);
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      font-family: 'Geist', 'Inter', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      margin: 0;
+      line-height: 1.5;
+      transition: background-color 0.2s cubic-bezier(.2, 0, 0, 1), color 0.2s cubic-bezier(.2, 0, 0, 1);
+    }
+
+    .blog-wrapper {
+      width: 100%;
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    .masthead {
+      text-align: center;
+      padding: 40px 0 30px;
+    }
+
+    .masthead .kicker {
+      font-size: 14px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--brand-accent);
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    .masthead h1 {
+      font-size: clamp(32px, 5vw, 48px);
+      font-weight: 800;
+      line-height: 1.2;
+      color: var(--text-main);
+      letter-spacing: -0.01em;
+      margin: 12px 0;
+    }
+
+    .masthead p {
+      font-size: 16px;
+      color: var(--text-muted);
+      max-width: 680px;
+      margin: 0 auto;
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+      align-items: center;
+      margin-top: 32px;
+    }
+
+    .filters input,
+    .filters select {
+      background: var(--surface-color);
+      border: 1px solid var(--border-color);
+      border-radius: 999px;
+      padding: 10px 20px;
+      font-size: 14px;
+      color: var(--text-main);
+      outline: none;
+      transition: border-color 0.2s cubic-bezier(.2, 0, 0, 1), box-shadow 0.2s cubic-bezier(.2, 0, 0, 1);
+    }
+
+    .filters input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .filters input:focus,
+    .filters select:focus {
+      border-color: var(--brand-accent);
+      box-shadow: 0 0 0 3px var(--brand-glow);
+    }
+
+    .filters select option {
+      background: var(--surface-color);
+      color: var(--text-main);
+    }
+
+    .rule {
+      height: 1px;
+      background: var(--border-color);
+      margin: 40px 0 50px;
+    }
+
+    /* Featured Article */
+    .featured-post {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 36px;
+      align-items: center;
+      background: var(--surface-color);
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      padding: 24px;
+      margin-bottom: 60px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    @media (max-width: 868px) {
+      .featured-post {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .featured-img {
+      width: 100%;
+      height: 340px;
+      object-fit: cover;
+      border-radius: 16px;
+    }
+
+    .featured-content .cat {
+      font-size: 14px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--brand-accent);
+      font-weight: 700;
+    }
+
+    .featured-content h2 {
+      font-size: clamp(24px, 3.5vw, 32px);
+      font-weight: 700;
+      color: var(--text-main);
+      margin: 12px 0;
+      line-height: 1.2;
+      letter-spacing: -0.01em;
+    }
+
+    .featured-content p {
+      font-size: 15px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin: 0;
+      text-align: left;
+    }
+
+    /* Posts Grid */
+    #posts {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 28px;
+    }
+
+    @media (max-width: 1024px) {
+      #posts {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 640px) {
+      #posts {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .post {
+      background: var(--surface-color);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.2s cubic-bezier(.2, 0, 0, 1), box-shadow 0.2s cubic-bezier(.2, 0, 0, 1), border-color 0.2s cubic-bezier(.2, 0, 0, 1);
+    }
+
+    .post:hover {
+      transform: translateY(-4px);
+      border-color: rgba(59, 130, 246, 0.4);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .post .img {
+      position: relative;
+      height: 200px;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #1a1e29;
+    }
+
+    .post .img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.25s cubic-bezier(.2, 0, 0, 1);
+    }
+
+    .post:hover .img img {
+      transform: scale(1.05);
+    }
+
+    .post .num-cat {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 16px 0 6px;
+    }
+
+    .post .num {
+      font-family: 'Geist Mono', monospace;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .post .cat {
+      font-size: 14px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--brand-accent);
+      font-weight: 700;
+    }
+
+    .post h3 {
+      font-size: 20px;
+      font-weight: 700;
+      line-height: 1.2;
+      letter-spacing: -0.01em;
+      color: var(--text-main);
+      margin: 8px 0;
+    }
+
+    .post .meta {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .post .body {
+      max-height: 60px;
+      overflow: hidden;
+      transition: max-height 0.25s cubic-bezier(.2, 0, 0, 1);
+    }
+
+    .post.open .body {
+      max-height: 1000px;
+    }
+
+    .post .body p {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin: 0;
+      width: 100%;
+      text-align: left;
+    }
+
+    .post .actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .readmore {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--brand-accent);
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 0;
+    }
+
+    .readmore:hover {
+      text-decoration: underline;
+    }
+
+    .like-btn {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-muted);
+      cursor: pointer;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      border-radius: 999px;
+      padding: 4px 14px;
+      transition: background 0.2s cubic-bezier(.2, 0, 0, 1), color 0.2s cubic-bezier(.2, 0, 0, 1), border-color 0.2s cubic-bezier(.2, 0, 0, 1);
+    }
+
+    .like-btn:hover,
+    .like-btn.liked {
+      background: rgba(220, 38, 38, 0.15);
+      color: #ef4444;
+      border-color: rgba(220, 38, 38, 0.4);
+    }
+
+    /* Pagination controls */
+    .pager {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      align-items: center;
+      margin-top: 50px;
+      font-size: 16px;
+      color: var(--text-main);
+    }
+
+    .pager-btn {
+      cursor: pointer;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: var(--surface-color);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      font-size: 16px;
+      transition: background 0.2s cubic-bezier(.2, 0, 0, 1), border-color 0.2s cubic-bezier(.2, 0, 0, 1);
+    }
+
+    .pager-btn:hover:not(:disabled) {
+      background: var(--brand-accent);
+      border-color: var(--brand-accent);
+      color: #fff;
+    }
+
+    .pager-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    #reading {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--brand-accent), #ec4899);
+      z-index: 1000;
+      width: 0%;
+    }
+
+    /* Accessibility: Prefers Reduced Motion */
+    @media (prefers-reduced-motion: reduce) {
+
+      *,
+      ::before,
+      ::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <script>if (typeof showPreloader === 'function') showPreloader(); if (typeof writeNav === 'function') writeNav();</script>
+  <div id="reading"></div>
+
+  <main class="blog-wrapper">
+    <header class="masthead">
+      <div class="kicker">— Vol. 02 — The Journal — Est. 2024 —</div>
+      <h1>Beautifully Crafted Thoughts</h1>
+      <p>Essays, ideas, and quiet reflections on design, engineering, and building the future.</p>
+
+      <div class="filters">
+        <input id="q" type="search" placeholder="Search the archive…" aria-label="Search articles" oninput="search()"
+          onkeyup="if(event.key === 'Enter') search()">
+        <button class="btn-ghost" style="color: var(--text-main); border-color: var(--border-color)"
+          onclick="search()">Search</button>
+        <select id="cat" aria-label="Filter by category" onchange="search()">
+          <option value="all">All Categories</option>
+          <option value="AI">AI</option>
+          <option value="Blockchain">Blockchain</option>
+          <option value="Life">Life</option>
+          <option value="Engineering">Engineering</option>
+        </select>
+      </div>
+    </header>
+
+    <div class="rule"></div>
+
+    <!-- Featured Post Section -->
+    <section class="featured-post">
+      <img class="featured-img" src="https://picsum.photos/id/1060/1000/700" alt="Featured Article cover image"
+        loading="lazy">
+      <div class="featured-content">
+        <div class="cat">— Featured Article —</div>
+        <h2>Craft Is Not Dead. It's Evolving.</h2>
+        <p>In an era of infinite content — where everything is generated — we asked a simple question: What does it mean
+          to truly craft something? The answer surprised us and reshaped how we think about design and software.</p>
+      </div>
+    </section>
+
+    <!-- Posts Grid -->
+    <section id="posts" aria-live="polite"></section>
+
+    <!-- Pagination -->
+    <nav class="pager" aria-label="Blog Pagination">
+      <button id="prev-btn" class="pager-btn" aria-label="Previous Page" onclick="prevPage()">←</button>
+      <span>Page <span id="pno">1</span> of <span id="total-pages">10</span></span>
+      <button id="next-btn" class="pager-btn" aria-label="Next Page" onclick="nextPage()">→</button>
+    </nav>
+  </main>
+
+  <script>
+    var POSTS = [];
+    var titles = [
+      "The Quiet Death of Productivity Theater",
+      "Why We Moved Our Infrastructure to Edge Networks",
+      "On Building Slowly — and Shipping Fast",
+      "The Future Is Not a Feature. It's a Feeling.",
+      "Hot Take: Minimal UI Wins Every Time",
+      "Accessibility Theater — and What Comes After",
+      "How We Scaled Our Data Pipeline Effortlessly",
+      "Designing Products That Users Genuinely Love",
+      "Dark Mode Architecture and Ergonomics",
+      "Mobile First Development in 2026",
+      "Clean Code and Modern Frontend Patterns",
+      "Engineering Culture and Technical Quality"
+    ];
+    var cats = ["AI", "Blockchain", "Life", "Engineering"];
+
+    for (var p = 0; p < 60; p++) {
+      var imageId = 1010 + (p % 20);
+      POSTS.push({
+        id: p,
+        title: titles[p % titles.length] + (p >= titles.length ? " (Part " + Math.floor(p / titles.length + 1) + ")" : ""),
+        cat: cats[p % cats.length],
+        date: 1704067200000 + p * 86400000 * 5,
+        likes: Math.floor(Math.random() * 80) + 12,
+        img: "https://picsum.photos/id/" + imageId + "/800/500",
+        body: "In a world that moves faster than ever — where every engineering team is chasing speed and velocity — we paused to re-evaluate our craft. Building resilient, accessible, and fast web experiences requires intention. Every line of code, every design choice, and every architecture decision shapes the overall user experience."
+      });
+    }
+
+    var page = 1;
+    var PER = 6;
+    var list = POSTS;
+
+    function safeFormatDate(d) {
+      try {
+        if (typeof formatDate === 'function') {
+          return formatDate(d);
+        }
+      } catch (e) { }
+      return new Date(d).toLocaleDateString();
+    }
+
+    function draw() {
+      var html = "";
+      var totalPages = Math.ceil(list.length / PER) || 1;
+      if (page > totalPages) page = totalPages;
+      if (page < 1) page = 1;
+
+      var start = (page - 1) * PER;
+      var end = Math.min(start + PER, list.length);
+
+      if (list.length === 0) {
+        html = '<div style="grid-column: 1 / -1; text-align: center; padding: 60px 0; color: var(--text-muted);">' +
+          '<h3>No articles found</h3><p>Try searching for a different term or category.</p></div>';
+      } else {
+        for (var n = start; n < end; n++) {
+          var post = list[n];
+          var formattedDate = safeFormatDate(post.date);
+          var timeAgo = (typeof moment !== 'undefined') ? moment(post.date).fromNow() : '';
+          var numStr = (n < 9 ? "0" : "") + (n + 1);
+
+          html += '<article class="post" id="post-' + post.id + '">' +
+            '<div class="img">' +
+            '<img src="' + post.img + '" alt="Thumbnail for ' + escapeAttr(post.title) + '" loading="lazy" onerror="this.onerror=null;this.src=\'https://picsum.photos/800/500?random=' + post.id + '\'">' +
+            '</div>' +
+            '<div class="num-cat">' +
+            '<span class="num">' + numStr + ' / ' + list.length + '</span>' +
+            '<span class="cat">' + escapeHtmlText(post.cat) + '</span>' +
+            '</div>' +
+            '<h3>' + escapeHtmlText(post.title) + '</h3>' +
+            '<div class="meta">' + formattedDate + (timeAgo ? ' (' + timeAgo + ')' : '') + ' — 4 min read</div>' +
+            '<div class="body"><p>' + escapeHtmlText(post.body) + '</p></div>' +
+            '<div class="actions">' +
+            '<button class="readmore" type="button" aria-expanded="false" onclick="toggleReadMore(' + post.id + ', this)">Continue reading →</button>' +
+            '<button class="like-btn" type="button" aria-label="Like article" onclick="likePost(' + post.id + ', this)">♥ <span class="like-count">' + post.likes + '</span></button>' +
+            '</div>' +
+            '</article>';
+        }
+      }
+
+      if (typeof $ !== 'undefined') {
+        $("#posts").html(html);
+        $("#pno").text(page);
+        $("#total-pages").text(totalPages);
+        $("#prev-btn").prop("disabled", page <= 1);
+        $("#next-btn").prop("disabled", page >= totalPages);
+      } else {
+        var postsEl = document.getElementById("posts");
+        if (postsEl) postsEl.innerHTML = html;
+        var pnoEl = document.getElementById("pno");
+        if (pnoEl) pnoEl.textContent = page;
+        var totalPagesEl = document.getElementById("total-pages");
+        if (totalPagesEl) totalPagesEl.textContent = totalPages;
+      }
+    }
+
+    function prevPage() {
+      if (page > 1) {
+        page--;
+        draw();
+        window.scrollTo({ top: 300, behavior: 'smooth' });
+      }
+    }
+
+    function nextPage() {
+      var totalPages = Math.ceil(list.length / PER);
+      if (page < totalPages) {
+        page++;
+        draw();
+        window.scrollTo({ top: 300, behavior: 'smooth' });
+      }
+    }
+
+    function toggleReadMore(postId, btn) {
+      var postEl = btn.closest('.post');
+      if (postEl) {
+        postEl.classList.toggle('open');
+        var isOpen = postEl.classList.contains('open');
+        btn.setAttribute('aria-expanded', isOpen);
+        btn.textContent = isOpen ? 'Show less ←' : 'Continue reading →';
+      }
+    }
+
+    function likePost(postId, btn) {
+      var post = POSTS.find(function (p) { return p.id === postId; });
+      if (post) {
+        if (!btn.classList.contains('liked')) {
+          post.likes = Number(post.likes) + 1;
+          btn.classList.add('liked');
+        } else {
+          post.likes = Number(post.likes) - 1;
+          btn.classList.remove('liked');
+        }
+        var countEl = btn.querySelector('.like-count');
+        if (countEl) countEl.textContent = post.likes;
+      }
+    }
+
+    function search() {
+      var q = "";
+      var qEl = document.getElementById("q");
+      if (qEl) q = (qEl.value || "").trim().toLowerCase();
+
+      var c = "all";
+      var catEl = document.getElementById("cat");
+      if (catEl) c = catEl.value || "all";
+
+      list = POSTS.filter(function (p) {
+        var matchesCategory = (c === "all" || p.cat.toLowerCase() === c.toLowerCase());
+        var matchesQuery = !q || p.title.toLowerCase().indexOf(q) > -1 || p.body.toLowerCase().indexOf(q) > -1;
+        return matchesCategory && matchesQuery;
+      });
+
+      page = 1;
+      draw();
+    }
+
+    function escapeHtmlText(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+
+    function escapeAttr(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    if (typeof $ !== 'undefined') {
+      $(document).ready(function () {
+        draw();
+      });
+    } else {
+      document.addEventListener("DOMContentLoaded", function () {
+        draw();
+      });
+    }
+
+    window.addEventListener("scroll", function () {
+      var totalHeight = document.documentElement.scrollHeight - window.innerHeight;
+      if (totalHeight > 0) {
+        var progress = (window.scrollY / totalHeight) * 100;
+        var readingEl = document.getElementById("reading");
+        if (readingEl) readingEl.style.width = Math.min(100, Math.max(0, progress)) + "%";
+      }
+    });
+  </script>
+
+  <script>
+    /* Restore Tab keyboard navigation.
+       main.js line 181 globally calls e.preventDefault() on every Tab keydown,
+       which breaks keyboard navigation across the entire page (WCAG 2.1 SC 2.1.1).
+       Per project rules, js/ files must not be edited — patches go in inline scripts. */
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Tab') { e.stopImmediatePropagation(); }
+    }, true);
+  </script>
+
+  <script>if (typeof writeFooter === 'function') writeFooter();</script>
+</body>
+
+</html>
